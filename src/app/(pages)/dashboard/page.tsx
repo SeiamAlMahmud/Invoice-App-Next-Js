@@ -14,6 +14,7 @@ import { CirclePlus } from 'lucide-react';
 import Link from "next/link";
 import { db } from "@/db";
 import { Invoices } from "@/db/schema";
+import { cn } from "@/lib/utils";
 
 
 interface Invoice {
@@ -29,7 +30,7 @@ export default async function Home() {
   const results = await db.select().from(Invoices);
   console.log(results, "results")
   return (
-    <main className="flex flex-col justify-center h-hfull gap-6 text-center max-w-5xl mx-auto my-12">
+    <main className="flex flex-col justify-center h-full gap-6 text-center max-w-5xl mx-auto my-12">
       <div className="flex justify-between">
         <h1 className="text-3xl font-bold">Invoices</h1>
         <p>
@@ -71,7 +72,14 @@ export default async function Home() {
                   <TableCell className="text-left p-0">fry@planetewxpress.com</TableCell>
                   <TableCell className="text-center p-0 ">
                     <Link href={`/invoices/${invoice.id}`} className=" block p-4">
-                      <Badge className="rounded-full cursor-pointer">{invoice.status}</Badge>
+                      <Badge className={cn(
+                        "rounded-full",
+                        invoice.status === 'open' && " bg-blue-500 ",
+                        invoice.status === 'paid' && " bg-green-600 ",
+                        invoice.status === 'void' && " bg-zinc-700 ",
+                        invoice.status === 'uncollectible' && " bg-red-600 ",
+                        "cursor-pointer capitalize"
+                      )}>{invoice.status}</Badge>
                     </Link>
                   </TableCell>
                   <TableCell className="text-right p-0">
