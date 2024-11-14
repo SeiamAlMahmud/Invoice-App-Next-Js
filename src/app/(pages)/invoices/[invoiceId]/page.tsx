@@ -1,20 +1,30 @@
-
+import { notFound } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { db } from "@/db";
 import { Invoices } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { cn } from "@/lib/utils";
+import { Result } from "postcss";
 
 
 
 export default async function InvoicePage({ params }: { params: { invoiceId: string } }) {
-  const invoiceId = params.invoiceId;
+  const invoiceId = parseInt(params.invoiceId, 10);
+  if (isNaN(invoiceId)) {
+    // If invoiceId is not a valid number, trigger notFound
+    notFound();
+    throw new Error("Invalid Invoice ID")
+  }
   // console.log(first)
   const [response] = await db.select()
     .from(Invoices)
     .where(eq(Invoices.id, invoiceId))
     .limit(1)
-  console.log(response)
+
+    if (!response) {
+      notFound()
+    }
+  // console.log(response)
 
   return (
     <main className=" h-full gap-6  max-w-5xl mx-auto my-12 px-5">
@@ -64,5 +74,6 @@ export default async function InvoicePage({ params }: { params: { invoiceId: str
 
     </main>
   );
+  
 }
 
