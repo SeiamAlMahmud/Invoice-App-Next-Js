@@ -7,29 +7,34 @@ import { Button } from "@/components/ui/button";
 import { sql } from 'drizzle-orm'
 import { db } from "@/db"
 import { createAction } from "@/app/actions";
-import { SyntheticEvent, useState } from "react";
+import { SyntheticEvent, useState, startTransition } from "react";
+import SubmitButton from "@/components/SubmitButton";
 
 export default function Home() {
 
     const [state, setState] = useState("ready");
     const handleOnSubmit = async (event: SyntheticEvent) => {
         event.preventDefault();
-        if(state === 'pending') return;
+        if (state === 'pending') return;
         setState("pending");
         const target = event.target as HTMLFormElement;
-        const formData = new FormData(target);
-        await createAction(formData)
-        console.log("hey")
+
+        startTransition(async () => {
+            const formData = new FormData(target);
+            await createAction(formData)
+            console.log("hey")
+        })
+
     }
 
 
     return (
-        <main className="flex flex-col justify-center h-hfull gap-6  max-w-5xl mx-auto my-12">
+        <main className="flex flex-col justify-center h-hfull gap-6  max-w-5xl mx-auto my-12 ">
             <div className="flex justify-between">
                 <h1 className="text-3xl font-bold">Invoices</h1>
             </div>
 
-            <form action={createAction} onSubmit={handleOnSubmit} className="grid gap-4 max-w-sm">
+            <form onSubmit={handleOnSubmit} className="grid gap-4 max-w-sm">
                 <div>
                     <Label htmlFor="name" className="block mb-2 font-semibold text-sm">Billing Name</Label>
                     <Input name="name" id="name" type="text" />
@@ -47,7 +52,7 @@ export default function Home() {
                     <Textarea name="description" id="description" />
                 </div>
                 <div>
-                    <Button className="w-full font-semibold">Submit</Button>
+                    <SubmitButton />
                 </div>
             </form>
 
