@@ -1,5 +1,6 @@
 import { drizzle, DrizzleClient } from "drizzle-orm/node-postgres";
 import { Pool, PoolConfig } from "pg";
+import { Invoices } from "./schema";
 
 // Define the configuration for the PostgreSQL connection pool
 const poolConfig: PoolConfig = {
@@ -11,6 +12,10 @@ const poolConfig: PoolConfig = {
 const pool = new Pool(poolConfig);
 
 // Initialize drizzle with the connection pool
-export const db: DrizzleClient = drizzle(pool);
+export const db: DrizzleClient = drizzle(pool, {
+    schema : {
+        Invoices
+    }
+});
 
 // Now, `db` can be used to interact with your database, and TypeScript will understand its methods and types.

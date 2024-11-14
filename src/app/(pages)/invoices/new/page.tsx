@@ -8,7 +8,7 @@ import { db } from "@/db"
 export default async function Home() {
 
     const results = await db.execute(sql`SELECT current_database()`)
-    // console.log(results)
+    console.log(results)
 
     return (
         <main className="flex flex-col justify-center h-hfull gap-6  max-w-5xl mx-auto my-12">
