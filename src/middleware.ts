@@ -6,7 +6,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 //   "/invoices/:invoiceId",
 //   "/invoices/new"
 // ])
-const isPublic  = createRouteMatcher([
+const isPublic = createRouteMatcher([
   "/"
 ])
 
