@@ -8,6 +8,13 @@
       "when": 1731549539936,
       "tag": "0000_fair_wrecker",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1731824773320,
+      "tag": "0001_sweet_tag",
+      "breakpoints": true
     }
   ]
 }

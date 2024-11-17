@@ -9,7 +9,7 @@ import { Result } from "postcss";
 
 
 export default async function InvoicePage({ params }: { params: { invoiceId: string } }) {
-  const invoiceId = parseInt(params.invoiceId, 10);
+  const invoiceId =  parseInt(params.invoiceId, 10);
   if (isNaN(invoiceId)) {
     // If invoiceId is not a valid number, trigger notFound
     notFound();
@@ -24,7 +24,7 @@ export default async function InvoicePage({ params }: { params: { invoiceId: str
     if (!response) {
       notFound()
     }
-  // console.log(response)
+  console.log(response)
 
   return (
     <main className=" h-full gap-6  max-w-5xl mx-auto my-12 px-5">

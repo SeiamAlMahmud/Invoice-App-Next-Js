@@ -1,37 +1,54 @@
 "use client"
 
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import Form from 'next/form'
+import Form from 'next/form';
 import { createAction } from "@/app/actions";
-import { SyntheticEvent, useState, startTransition } from "react";
-import SubmitButton from "@/components/SubmitButton";
+import { SyntheticEvent, useState, useEffect, startTransition } from "react";
+import { useRouter } from 'next/navigation';  // import useRouter for navigation
 
 export default function Home() {
-
     const [state, setState] = useState("ready");
+    const [invoiceId, setInvoiceId] = useState<number | null>(null);
+    const router = useRouter();  // Hook to handle redirection
+
     const handleOnSubmit = async (event: SyntheticEvent) => {
         if (state === 'pending') {
             event.preventDefault();
-            return
+            return;
+        }
 
-        };
         setState("pending");
+        const target = event.target as HTMLFormElement;
 
-        // const target = event.target as HTMLFormElement;
-        // startTransition(async () => {
-        //     const formData = new FormData(target);
-        //     await createAction(formData)
-        //     console.log("hey")
-        // })
+        // Using the startTransition to manage state updates without blocking UI rendering
+        startTransition(async () => {
+            const formData = new FormData(target);
 
+            try {
+                // Call the server action and get the new invoice ID
+                const result = await createAction(formData);
+                const { id } = result; // Get the ID of the created invoice
+
+                setInvoiceId(id); // Update local state with the new invoice ID
+            } catch (error) {
+                console.error("Error during form submission:", error);
+                setState("ready");
+            }
+        });
     }
 
+    // After state update with invoice ID, redirect to the invoice details page
+    useEffect(() => {
+        if (invoiceId !== null) {
+            router.push(`/invoices/${invoiceId}`);
+        }
+    }, [invoiceId, router]);  // Trigger the effect when invoiceId changes
 
     return (
-        <main className="flex flex-col justify-center h-hfull gap-6  max-w-5xl mx-auto my-12 px-5">
+        <main className="flex flex-col justify-center h-full gap-6 max-w-5xl mx-auto my-12 px-5">
             <div className="flex justify-between">
                 <h1 className="text-3xl font-bold">Invoices</h1>
             </div>
@@ -54,10 +71,9 @@ export default function Home() {
                     <Textarea name="description" id="description" />
                 </div>
                 <div>
-                    <SubmitButton />
+                    <Button type="submit" disabled={state === 'pending'}>Submit</Button>
                 </div>
             </Form>
-
         </main>
     );
 }
