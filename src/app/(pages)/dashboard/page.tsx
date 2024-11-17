@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button";
 import { CirclePlus } from 'lucide-react';
 import Link from "next/link";
+import { auth } from '@clerk/nextjs/server';
+import { eq } from "drizzle-orm"
 import { db } from "@/db";
 import { Invoices } from "@/db/schema";
 import { cn } from "@/lib/utils";
@@ -28,7 +30,12 @@ interface Invoice {
 }
 
 export default async function Home() {
-  const results = await db.select().from(Invoices);
+
+  const { userId } = await auth();
+  if(!userId) return;
+  const results = await db.select()
+    .from(Invoices)
+    .where(eq(Invoices.userId, userId));
   console.log(results, "results")
   return (
     <main className=" h-full my-7">
