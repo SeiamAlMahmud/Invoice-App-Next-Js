@@ -15,30 +15,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button";
+import { AVAILABLE_STATUSES } from "@/app/data/invoices";
+import { updateStatusAction } from "@/app/actions";
 
 
-interface Status {
-  id: 'open' | 'paid' | 'void' | 'uncollectible';
-  label: string;
-}
-const AVAILABLE_STATUSES: Status[] = [
-  {
-    id: 'open',
-    label: 'Open',
-  },
-  {
-    id: 'paid',
-    label: 'Paid',
-  },
-  {
-    id: 'void',
-    label: 'Void',
-  },
-  {
-    id: 'uncollectible',
-    label: 'Uncollectible',
-  },
-]
+
 
 export default async function InvoicePage({ params }: { params: Promise<{ invoiceId: string }> }) {
   // Ensure params are awaited correctly
@@ -92,16 +73,16 @@ export default async function InvoicePage({ params }: { params: Promise<{ invoic
               {
                 AVAILABLE_STATUSES.map(item => {
                   return (
-                    <>
-                      <DropdownMenuItem key={item.id}>
-                        <form>
+                    <div key={item.id}>
+                      <DropdownMenuItem >
+                        <form action={updateStatusAction}>
                           <input type="hidden" name="id" value={invoiceId} />
                           <input type="hidden" name="status" value={item.id} />
                           <button> {item.label} </button>
                         </form>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className="last:hidden" />
-                    </>
+                    </div>
                   )
                 })
               }
