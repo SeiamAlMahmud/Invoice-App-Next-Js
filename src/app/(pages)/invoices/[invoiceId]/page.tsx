@@ -40,13 +40,13 @@ const AVAILABLE_STATUSES: Status[] = [
   },
 ]
 
-export default async function InvoicePage({ params }: { params: { invoiceId: string } }) {
+export default async function InvoicePage({ params }: { params: Promise<{ invoiceId: string }> }) {
   // Ensure params are awaited correctly
   const { userId } = await auth();
   if (!userId) return null;
 
   // Await params before using them
-  const invoiceId = parseInt(params.invoiceId, 10);
+  const invoiceId = parseInt((await params).invoiceId, 10);
 
   if (isNaN(invoiceId)) {
     // If invoiceId is not a valid number, trigger notFound
