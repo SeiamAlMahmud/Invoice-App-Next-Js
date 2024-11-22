@@ -6,6 +6,8 @@ import { and, eq } from "drizzle-orm";
 import { cn } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import Container from "@/components/Container";
+import { ChevronDown } from 'lucide-react';
+
 
 import {
   DropdownMenu,
@@ -67,7 +69,12 @@ export default async function InvoicePage({ params }: { params: Promise<{ invoic
           </h1>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline"> Change status </Button>
+              <Button
+               variant="outline"
+               className="flex item gap-2">
+                 Change status
+                 <ChevronDown className="w-4 h-auto" />
+                  </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               {
