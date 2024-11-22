@@ -2,7 +2,7 @@ import { AVAILABLE_STATUSES } from '@/app/data/invoices';
 import { pgTable, serial, timestamp, text, integer, pgEnum } from 'drizzle-orm/pg-core';
 
 export type Status = typeof AVAILABLE_STATUSES[number]["id"]
-const statuses = AVAILABLE_STATUSES.map(({ id }) => id) as Array<Status>;
+export const statuses = AVAILABLE_STATUSES.map(({ id }) => id) as Array<Status>;
 
 export const statusEnum = pgEnum('status', statuses as [Status, ...Array<Status>])
 
