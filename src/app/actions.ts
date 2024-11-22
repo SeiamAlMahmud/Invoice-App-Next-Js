@@ -4,6 +4,7 @@ import { Invoices, Status } from "@/db/schema";
 import { db } from "@/db";
 import { auth } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache"
 
 export const createAction = async (formData: FormData) => {
     const { userId }: { userId: string | null } = await auth();
@@ -45,7 +46,7 @@ export const updateStatusAction = async (formData: FormData) => {
 
     const { userId }: { userId: string | null } = await auth();
 
-    console.log("userId", userId)
+    // console.log("userId", userId)
     if (!userId) {
         // Return an error if user is not authenticated
         throw new Error("User not authenticated");
@@ -65,6 +66,8 @@ export const updateStatusAction = async (formData: FormData) => {
             )
 
         console.log("results", results)
+        revalidatePath(`/invoices/${parseInt(id)}`, 'page')
+
     } catch (error) {
         console.error("Error creating invoice:", error);
         throw new Error("Failed to create invoice");
