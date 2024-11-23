@@ -3,9 +3,19 @@ import { Badge } from "@/components/ui/badge";
 import { Invoices, Status, statuses } from "@/db/schema";
 import { cn } from "@/lib/utils";
 import Container from "@/components/Container";
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Trash2 } from 'lucide-react';
 import { Ellipsis } from 'lucide-react';
 
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+  } from "@/components/ui/dialog"
+  
 
 import {
     DropdownMenu,
@@ -17,7 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { AVAILABLE_STATUSES } from "@/app/data/invoices";
 import { updateStatusAction, deleteInvoiceAction } from "@/app/actions";
-import { useOptimistic } from "react";
+import { useOptimistic, useState } from "react";
 import { useRouter } from 'next/navigation'; 
 
 
@@ -28,6 +38,7 @@ interface InvoiceProps {
 export default function Invoice({ invoice }: InvoiceProps) {
     
   const router = useRouter();
+  const [loading, setLoading] = useState(false)
 
     const [currentStatus, setCurrentStatus] = useOptimistic(
         invoice.status,
@@ -53,17 +64,20 @@ export default function Invoice({ invoice }: InvoiceProps) {
     }
 
     const handleDeleteInvoice = async (formData: FormData)=> {
-
         try {
+            setLoading(true)
             const result = await deleteInvoiceAction(formData);
             if (result.success) {
+                setLoading(false)
                 router.push("/dashboard"); // Redirect to /dashboard after deletion 
         }
         } catch (error) {
             console.log(error)
+        }finally{
+            setLoading(false)
         }
     }
-
+console.log(loading,"dsfhsdugfuysdgfyu")
     return (
         <main className="w-full h-screen gap-6 mt-10 px-5">
             <Container>
@@ -79,7 +93,7 @@ export default function Invoice({ invoice }: InvoiceProps) {
                             "cursor-pointer capitalize"
                         )}>{currentStatus}</Badge>
                     </h1>
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 justify-between">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
@@ -108,29 +122,66 @@ export default function Invoice({ invoice }: InvoiceProps) {
                                 }
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    className="flex item gap-2">
-                                    <span className="sr-only">More Options</span>
-                                    <Ellipsis className="w-4 h-auto" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
 
-                                <div >
-                                    <DropdownMenuItem className="cursor-pointer w-full ">
-                                        <form action={handleDeleteInvoice} className="w-full">
-                                            <input type="hidden" name="id" value={invoice.id} />
-                                            <button className="w-full text-left"> Delete Invoice </button>
-                                        </form>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator className="last:hidden" />
-                                </div>
+                        <Dialog>
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="outline" className="flex items-center gap-2">
+        <span className="sr-only">More Options</span>
+        <Ellipsis className="w-4 h-auto" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent>
+      <div className="Container">
+        <DropdownMenuItem className="cursor-pointer w-full">
+          <DialogTrigger asChild>
+            <span role="button" className="w-full text-left flex gap-2 cursor-pointer">
+              <Trash2 className="w-4 h-auto" />
+              Delete Invoice
+            </span>
+          </DialogTrigger>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator className="last:hidden" />
+      </div>
+    </DropdownMenuContent>
+  </DropdownMenu>
 
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+  <DialogContent className="bg-white">
+    <DialogHeader className="space-y-4">
+      <DialogTitle className="text-3xl text-center">Delete Invoice?</DialogTitle>
+      <DialogDescription>
+        This action cannot be undone. This will permanently delete your Invoice
+        and remove your data from our servers.
+      </DialogDescription>
+
+      <DialogFooter>
+        <form action={handleDeleteInvoice} className="w-1/2 flex justify-center mx-auto">
+          <input type="hidden" name="id" value={invoice.id} />
+          <Button
+            variant="destructive"
+            disabled={loading}
+            className="w-full text-left flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+               
+                <span>Deleting Invoice...</span>
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-auto" /> Delete Invoice
+              </>
+            )}
+          </Button>
+        </form>
+      </DialogFooter>
+    </DialogHeader>
+  </DialogContent>
+</Dialog>
+
+
+ 
+                    
                     </div>
                 </div>
                 <p className="text-3xl mb-3">
