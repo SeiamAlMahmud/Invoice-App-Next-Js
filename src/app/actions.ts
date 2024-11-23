@@ -1,6 +1,6 @@
 "use server";
 
-import { Invoices, Status } from "@/db/schema";
+import { Customers, Invoices, Status } from "@/db/schema";
 import { db } from "@/db";
 import { auth } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
@@ -12,6 +12,8 @@ export const createAction = async (formData: FormData) => {
     // Parse form data
     const value: number = Math.floor(parseFloat(String(formData.get('value'))) * 100);
     const description = formData.get('description') as string;
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
 
     if (!userId) {
         // Return an error if user is not authenticated
@@ -20,17 +22,28 @@ export const createAction = async (formData: FormData) => {
 
     try {
         // Insert the new invoice into the database
-        const results = await db.insert(Invoices)
+        const [customer] = await db.insert(Customers)
             .values({
-                value,
-                description,
+                name,
+                email,
                 userId,
-                status: 'open',
             })
             .returning({
-                id: Invoices.id,
+                id: Customers.id,
             });
 
+                    // Insert the new invoice into the database
+        const results = await db.insert(Invoices)
+        .values({
+            value,
+            description,
+            userId,
+            customerId: customer.id,
+            status: 'open',
+        })
+        .returning({
+            id: Invoices.id,
+        });
 
         // Return the ID of the newly created invoice (this will be used for redirection)
         return { id: results[0].id };

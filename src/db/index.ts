@@ -1,6 +1,6 @@
 import { drizzle, DrizzleClient } from "drizzle-orm/node-postgres";
 import { Pool, PoolConfig } from "pg";
-import { Invoices } from "./schema";
+import { Invoices, Customers } from "./schema";
 
 // Define the configuration for the PostgreSQL connection pool
 const poolConfig: PoolConfig = {
@@ -14,7 +14,8 @@ const pool = new Pool(poolConfig);
 // Initialize drizzle with the connection pool
 export const db: DrizzleClient = drizzle(pool, {
     schema : {
-        Invoices
+        Invoices,
+         Customers
     }
 });
 

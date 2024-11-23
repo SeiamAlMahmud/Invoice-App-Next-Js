@@ -1,6 +1,6 @@
 "use client"
 import { Badge } from "@/components/ui/badge";
-import { Invoices, Status, statuses } from "@/db/schema";
+import { Customers, Invoices, Status, statuses } from "@/db/schema";
 import { cn } from "@/lib/utils";
 import Container from "@/components/Container";
 import { ChevronDown, Trash2 } from 'lucide-react';
@@ -33,7 +33,9 @@ import SubmitButton from "@/components/SubmitButton";
 
 
 interface InvoiceProps {
-    invoice: typeof Invoices.$inferSelect;
+    invoice: typeof Invoices.$inferSelect & {
+        customer: typeof Customers.$inferSelect
+    };
 }
 
 export default function Invoice({ invoice }: InvoiceProps) {
@@ -195,11 +197,11 @@ console.log(loading,"dsfhsdugfuysdgfyu")
                     </li>
                     <li className="flex gap-4">
                         <strong className="block w-28 flex-shrink-0 font-medium text-sm">Billing Name</strong>
-                        <span></span>
+                        <span>{invoice.customer.name}</span>
                     </li>
                     <li className="flex gap-4">
                         <strong className="block w-28 flex-shrink-0 font-medium text-sm">Invoice Email</strong>
-                        <span></span>
+                        <span>{invoice.customer.email}</span>
                     </li>
                 </ul>
             </Container>

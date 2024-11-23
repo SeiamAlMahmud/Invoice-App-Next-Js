@@ -15,7 +15,7 @@ import Link from "next/link";
 import { auth } from '@clerk/nextjs/server';
 import { eq } from "drizzle-orm"
 import { db } from "@/db";
-import { Invoices } from "@/db/schema";
+import { Customers, Invoices } from "@/db/schema";
 import { cn } from "@/lib/utils";
 import Container from "@/components/Container";
 
@@ -29,14 +29,49 @@ interface Invoice {
   // Add additional fields for customer name/email if they exist
 }
 
+
+type Customer = {
+  id: number;
+  createTs: string; // Assuming createTs is stored as an ISO string
+  name: string;
+  email: string;
+  userId: string;
+};
+
+
+type InvoiceWithCustomer = {
+  id: number;
+  createTs: Date;
+  value: number;
+  description: string;
+  status: string;
+  customer: Customer;
+}
+type ResultRow = {
+  invoices: Invoice;
+  customers: Customer;
+};
+
+
+
 export default async function Home() {
 
   const { userId } = await auth();
-  if(!userId) return;
+  if (!userId) return;
   const results = await db.select()
     .from(Invoices)
+    .innerJoin(Customers, eq(Invoices.customerId, Customers.id))
     .where(eq(Invoices.userId, userId));
-  console.log(results, "results")
+
+
+    
+    const invoices: InvoiceWithCustomer[] = results?.map(({ invoices, customers }: ResultRow) => {
+      return {
+        ...invoices,
+        customer: customers
+      }
+    })
+    console.log(invoices, "invoices")
   return (
     <main className=" h-full my-7">
       <Container>
@@ -65,7 +100,7 @@ export default async function Home() {
           </TableHeader>
           <TableBody>
             {
-              results.map((invoice: Invoice) => {
+              invoices.map((invoice: InvoiceWithCustomer) => {
                 return (
                   <TableRow key={invoice.id}>
                     <TableCell className="font-medium text-left  p-0">
@@ -75,10 +110,10 @@ export default async function Home() {
                     </TableCell>
                     <TableCell className="text-left p-0 ">
                       <Link href={`/invoices/${invoice.id}`} className="font-bold  block p-4">
-                        Philip J.Fry
+                        {invoice.customer.name}
                       </Link>
                     </TableCell>
-                    <TableCell className="text-left p-0">fry@planetewxpress.com</TableCell>
+                    <TableCell className="text-left p-0">{invoice.customer.email}</TableCell>
                     <TableCell className="text-center p-0 ">
                       <Link href={`/invoices/${invoice.id}`} className=" block p-4">
                         <Badge className={cn(
