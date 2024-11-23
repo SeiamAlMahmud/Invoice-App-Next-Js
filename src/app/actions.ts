@@ -75,3 +75,39 @@ export const updateStatusAction = async (formData: FormData) => {
 
 
 }
+
+
+
+export const deleteInvoiceAction = async (formData: FormData) => {
+
+    const { userId }: { userId: string | null } = await auth();
+
+    
+    if (!userId) {
+        // Return an error if user is not authenticated
+        throw new Error("User not authenticated");
+    }
+
+    try {
+        const id = formData.get('id') as string;
+
+        const results = await db.delete(Invoices)
+            .where(
+                and(
+                    eq(Invoices.id, parseInt(id)),
+                    eq(Invoices.userId, userId)
+                )
+            )
+
+        console.log("results", results)
+        
+          // Indicate success in the response
+          return { success: true };
+
+    } catch (error) {
+        console.error("Error creating invoice:", error);
+        throw new Error("Failed to create invoice");
+    }
+
+
+}
