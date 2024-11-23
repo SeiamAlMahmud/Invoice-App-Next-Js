@@ -76,11 +76,11 @@ export default function Invoice({ invoice }: InvoiceProps) {
                                 AVAILABLE_STATUSES.map(item => {
                                     return (
                                         <div key={item.id}>
-                                            <DropdownMenuItem className="cursor-pointer">
-                                                <form action={handleOnUpdateStatus}>
+                                            <DropdownMenuItem className="cursor-pointer w-full ">
+                                                <form action={handleOnUpdateStatus} className="w-full">
                                                     <input type="hidden" name="id" value={invoice.id} />
                                                     <input type="hidden" name="status" value={item.id} />
-                                                    <button> {item.label} </button>
+                                                    <button className="w-full text-left"> {item.label} </button>
                                                 </form>
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator className="last:hidden" />
