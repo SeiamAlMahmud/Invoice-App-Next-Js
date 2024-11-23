@@ -29,6 +29,7 @@ import { AVAILABLE_STATUSES } from "@/app/data/invoices";
 import { updateStatusAction, deleteInvoiceAction } from "@/app/actions";
 import { useOptimistic, useState } from "react";
 import { useRouter } from 'next/navigation'; 
+import SubmitButton from "@/components/SubmitButton";
 
 
 interface InvoiceProps {
@@ -157,22 +158,11 @@ console.log(loading,"dsfhsdugfuysdgfyu")
       <DialogFooter>
         <form action={handleDeleteInvoice} className="w-1/2 flex justify-center mx-auto">
           <input type="hidden" name="id" value={invoice.id} />
-          <Button
-            variant="destructive"
-            disabled={loading}
-            className="w-full text-left flex items-center gap-2"
-          >
-            {loading ? (
-              <>
-               
-                <span>Deleting Invoice...</span>
-              </>
-            ) : (
-              <>
-                <Trash2 className="w-4 h-auto" /> Delete Invoice
-              </>
-            )}
-          </Button>
+        <SubmitButton
+         text="Delete Invoice"
+         text2="Deleteing Invoice..."
+         variant="destructive"
+         />
         </form>
       </DialogFooter>
     </DialogHeader>
