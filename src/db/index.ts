@@ -1,4 +1,4 @@
-import { drizzle, DrizzleClient } from "drizzle-orm/node-postgres";
+import { drizzle} from "drizzle-orm/node-postgres";
 import { Pool, PoolConfig } from "pg";
 import { Invoices, Customers } from "./schema";
 
@@ -12,7 +12,7 @@ const poolConfig: PoolConfig = {
 const pool = new Pool(poolConfig);
 
 // Initialize drizzle with the connection pool
-export const db: DrizzleClient = drizzle(pool, {
+export const db = drizzle(pool, {
     schema : {
         Invoices,
          Customers

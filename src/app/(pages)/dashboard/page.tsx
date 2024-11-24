@@ -32,7 +32,7 @@ interface Invoice {
 
 type Customer = {
   id: number;
-  createTs: string; // Assuming createTs is stored as an ISO string
+  createTs: Date; // Assuming createTs is stored as an ISO string
   name: string;
   email: string;
   userId: string;

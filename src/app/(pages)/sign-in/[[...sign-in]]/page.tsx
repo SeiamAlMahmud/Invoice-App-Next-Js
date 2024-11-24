@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import * as Clerk from '@clerk/elements/common'
 import * as SignIn from '@clerk/elements/sign-in'
-import { Ghost, Layers } from 'lucide-react'
+import { Layers } from 'lucide-react'
 
 export default function SignInPage() {
     return (
