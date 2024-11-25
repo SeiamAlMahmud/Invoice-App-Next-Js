@@ -6,6 +6,8 @@ import { db } from "@/db";
 import { auth } from "@clerk/nextjs/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache"
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 
 const stripe = new Stripe(String(process.env.STRIPE_API_SECRET));
@@ -161,4 +163,49 @@ export const deleteInvoiceAction = async (formData: FormData) => {
     }
 
 
+}
+
+
+export const createPayment = async (formData: FormData) => {
+
+    const id = parseInt(formData.get('id') as string);
+    const HeadersList = headers();
+    const origin = (await HeadersList).get('origin');
+
+    const [result] = await db.select({
+        status: Invoices.status,
+        value: Invoices.value,
+    })
+        .from(Invoices)
+        .where(eq(Invoices.id, id))
+        .limit(1)
+
+    console.log(result)
+
+    const session = await stripe.checkout.sessions.create({
+        line_items: [
+          {
+            price_data: {
+                currency: 'usd',
+                // product: '<product id>',
+                product_data: {
+                    name: `Invoice Payment #${id}`, 
+                    description: 'Payment for your invoice', 
+                },
+                unit_amount: result.value,
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: `${origin}/invoices/${id}/payment?success=true`,
+        cancel_url: `${origin}/invoices/${id}/payment?canceled=true`,
+      });
+
+      console.log(session)
+
+      if (!session.url) {
+        throw new Error('Invalid Session , Stripe')
+      }
+      redirect(session.url)
 }

@@ -8,7 +8,7 @@ import { Ellipsis } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { AVAILABLE_STATUSES } from "@/app/data/invoices";
-import { updateStatusAction, deleteInvoiceAction } from "@/app/actions";
+import { updateStatusAction, deleteInvoiceAction, createPayment } from "@/app/actions";
 import { useOptimistic, useState } from "react";
 import { notFound, useRouter } from 'next/navigation';
 import SubmitButton from "@/components/SubmitButton";
@@ -89,7 +89,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ invoic
                         <h2 className="text-xl font-bold mb-4">Manage Invoice</h2>
                         {
                             invoice.status === 'open' && (
-                                <form>
+                                <form action={createPayment}>
+                                    <input type="hidden" name="id" value={invoice.id} />
                                     <Button className="flex gap-2 bg-green-700 font-bold">
                                         <CreditCard className="w-5 h-auto" />
                                         Pay Invoice
