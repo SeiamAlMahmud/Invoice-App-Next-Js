@@ -21,8 +21,8 @@ const Header = () => {
                         <span className='text-slate-300'>/</span>
                         <SignedIn>
                             <span className='-ml-2'>
-                                <OrganizationSwitcher 
-                                afterCreateOrganizationUrl={"/dashboard"}  />
+                                <OrganizationSwitcher
+                                    afterCreateOrganizationUrl={"/dashboard"} />
                             </span>
                         </SignedIn>
                     </div>
