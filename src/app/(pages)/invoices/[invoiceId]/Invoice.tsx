@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Customers, Invoices, Status, statuses } from "@/db/schema";
 import { cn } from "@/lib/utils";
 import Container from "@/components/Container";
-import { ChevronDown, Trash2 } from 'lucide-react';
+import { ChevronDown, CreditCard, Trash2 } from 'lucide-react';
 import { Ellipsis } from 'lucide-react';
 
 import {
@@ -30,6 +30,7 @@ import { updateStatusAction, deleteInvoiceAction } from "@/app/actions";
 import { useOptimistic, useState } from "react";
 import { useRouter } from 'next/navigation'; 
 import SubmitButton from "@/components/SubmitButton";
+import Link from "next/link";
 
 
 interface InvoiceProps {
@@ -143,6 +144,15 @@ console.log(loading,"dsfhsdugfuysdgfyu")
               Delete Invoice
             </span>
           </DialogTrigger>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="cursor-pointer w-full">
+          
+            <Link href={`/invoices/${invoice.id}/payment`} className="w-full text-left flex gap-2 cursor-pointer">
+              <CreditCard className="w-4 h-auto" />
+              Payment
+            </Link>
+          
         </DropdownMenuItem>
         <DropdownMenuSeparator className="last:hidden" />
       </div>

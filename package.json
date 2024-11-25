@@ -27,6 +27,7 @@
     "react": "^19.0.0-rc-7ac8e612-20241113",
     "react-dom": "^19.0.0-rc-7ac8e612-20241113",
     "react-spinners": "^0.14.1",
+    "stripe": "^17.4.0",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7"
   },
