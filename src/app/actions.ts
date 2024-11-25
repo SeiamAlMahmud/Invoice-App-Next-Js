@@ -3,7 +3,7 @@
 import { Customers, Invoices, Status } from "@/db/schema";
 import { db } from "@/db";
 import { auth } from "@clerk/nextjs/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache"
 
 type AuthDefine = {
@@ -39,19 +39,19 @@ export const createAction = async (formData: FormData) => {
                 id: Customers.id,
             });
 
-                    // Insert the new invoice into the database
+        // Insert the new invoice into the database
         const results = await db.insert(Invoices)
-        .values({
-            value,
-            description,
-            userId,
-            customerId: customer.id,
-            status: 'open',
-            organizationId: orgId || null,
-        })
-        .returning({
-            id: Invoices.id,
-        });
+            .values({
+                value,
+                description,
+                userId,
+                customerId: customer.id,
+                status: 'open',
+                organizationId: orgId || null,
+            })
+            .returning({
+                id: Invoices.id,
+            });
 
         // Return the ID of the newly created invoice (this will be used for redirection)
         return { id: results[0].id };
@@ -65,7 +65,7 @@ export const createAction = async (formData: FormData) => {
 
 export const updateStatusAction = async (formData: FormData) => {
 
-    const { userId }: { userId: string | null } = await auth();
+    const { userId, orgId }: { userId: string | null, orgId: string | null | undefined } = await auth();
 
     // console.log("userId", userId)
     if (!userId) {
@@ -76,15 +76,28 @@ export const updateStatusAction = async (formData: FormData) => {
     try {
         const id = formData.get('id') as string;
         const status = formData.get('status') as Status;
-
-        const results = await db.update(Invoices)
-            .set({ status })
-            .where(
-                and(
-                    eq(Invoices.id, parseInt(id)),
-                    eq(Invoices.userId, userId)
+        let results;
+        if (orgId) {
+            results = await db.update(Invoices)
+                .set({ status })
+                .where(
+                    and(
+                        eq(Invoices.id, parseInt(id)),
+                        eq(Invoices.organizationId, orgId)
+                    )
                 )
-            )
+        } else {
+            results = await db.update(Invoices)
+                .set({ status })
+                .where(
+                    and(
+                        eq(Invoices.id, parseInt(id)),
+                        eq(Invoices.userId, userId),
+                        isNull(Invoices.organizationId)
+                    )
+                )
+        }
+
 
         console.log("results", results)
         revalidatePath(`/invoices/${parseInt(id)}`, 'page')
@@ -101,9 +114,9 @@ export const updateStatusAction = async (formData: FormData) => {
 
 export const deleteInvoiceAction = async (formData: FormData) => {
 
-    const { userId }: { userId: string | null } = await auth();
+    const { userId, orgId }: { userId: string | null, orgId: string | null | undefined } = await auth();
 
-    
+
     if (!userId) {
         // Return an error if user is not authenticated
         throw new Error("User not authenticated");
@@ -112,18 +125,31 @@ export const deleteInvoiceAction = async (formData: FormData) => {
     try {
         const id = formData.get('id') as string;
 
-        const results = await db.delete(Invoices)
-            .where(
-                and(
-                    eq(Invoices.id, parseInt(id)),
-                    eq(Invoices.userId, userId)
+        let results;
+        if (orgId) {
+            results = await db.delete(Invoices)
+                .where(
+                    and(
+                        eq(Invoices.id, parseInt(id)),
+                        eq(Invoices.organizationId, orgId)
+                    )
                 )
-            )
+        } else {
+            results = await db.delete(Invoices)
+                .where(
+                    and(
+                        eq(Invoices.id, parseInt(id)),
+                        eq(Invoices.userId, userId),
+                        isNull(Invoices.organizationId)
+                    )
+                )
+        }
+
 
         console.log("results", results)
-        
-          // Indicate success in the response
-          return { success: true };
+
+        // Indicate success in the response
+        return { success: true };
 
     } catch (error) {
         console.error("Error creating invoice:", error);

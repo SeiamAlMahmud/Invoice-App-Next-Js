@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { CirclePlus } from 'lucide-react';
 import Link from "next/link";
 import { auth } from '@clerk/nextjs/server';
-import { eq } from "drizzle-orm"
+import { and, eq, isNull } from "drizzle-orm"
 import { db } from "@/db";
 import { Customers, Invoices } from "@/db/schema";
 import { cn } from "@/lib/utils";
@@ -56,14 +56,28 @@ type ResultRow = {
 
 export default async function Home() {
 
-  const { userId } = await auth();
+  const { userId, orgId } = await auth();
   if (!userId) return;
-  const results = await db.select()
-    .from(Invoices)
-    .innerJoin(Customers, eq(Invoices.customerId, Customers.id))
-    .where(eq(Invoices.userId, userId));
 
+  let results;
 
+ if(orgId){
+   results = await db.select()
+  .from(Invoices)
+  .innerJoin(Customers, eq(Invoices.customerId, Customers.id))
+  .where(eq(Invoices.organizationId, orgId));
+ }else {
+   results = await db.select()
+  .from(Invoices)
+  .innerJoin(Customers, eq(Invoices.customerId, Customers.id))
+  .where(
+    and(
+      eq(Invoices.userId, userId),
+      isNull(Invoices.organizationId)
+
+    )
+);
+ }
     
     const invoices: InvoiceWithCustomer[] = results?.map(({ invoices, customers }: ResultRow) => {
       return {
