@@ -5,6 +5,8 @@ import { and, eq, isNull } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import Invoice from "./Invoice";
 
+
+
 export default async function InvoicePage({ params }: { params: Promise<{ invoiceId: string }> }) {
   // Ensure params are awaited correctly
   const { userId, orgId } = await auth();

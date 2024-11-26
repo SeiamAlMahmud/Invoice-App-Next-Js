@@ -67,9 +67,12 @@ export const createAction = async (formData: FormData) => {
     }
 };
 
+interface UpdateStatusActionParams {
+    formData: FormData;
+    revel?: boolean; // Optional, defaults to false
+  }
 
-
-export const updateStatusAction = async (formData: FormData) => {
+export const updateStatusAction = async ({ formData, revel = true }: UpdateStatusActionParams) => {
 
     const { userId, orgId }: { userId: string | null, orgId: string | null | undefined } = await auth();
 
@@ -106,7 +109,9 @@ export const updateStatusAction = async (formData: FormData) => {
 
 
         console.log("results", results)
-        revalidatePath(`/invoices/${parseInt(id)}`, 'page')
+        if (revel) {
+            revalidatePath(`/invoices/${parseInt(id)}`, 'page')
+        }
 
     } catch (error) {
         console.error("Error creating invoice:", error);
@@ -166,46 +171,47 @@ export const deleteInvoiceAction = async (formData: FormData) => {
 }
 
 
-export const createPayment = async (formData: FormData) => {
-
-    const id = parseInt(formData.get('id') as string);
-    const HeadersList = headers();
-    const origin = (await HeadersList).get('origin');
-
-    const [result] = await db.select({
+export async function createPayment(formData: FormData) {
+    // Payments disabled for demo
+    // const { userId } = auth();
+    // if ( userId !== process.env.ME_ID ) return;
+  
+    const headersList = headers();
+    const origin = (await headersList).get("origin");
+    const id = Number.parseInt(formData.get("id") as string);
+  
+    const [result] = await db
+      .select({
         status: Invoices.status,
         value: Invoices.value,
-    })
-        .from(Invoices)
-        .where(eq(Invoices.id, id))
-        .limit(1)
-
-    console.log(result)
-
+      })
+      .from(Invoices)
+      .where(eq(Invoices.id, id))
+      .limit(1);
+  
     const session = await stripe.checkout.sessions.create({
-        line_items: [
-          {
-            price_data: {
-                currency: 'usd',
-                // product: '<product id>',
-                product_data: {
-                    name: `Invoice Payment #${id}`, 
-                    description: 'Payment for your invoice', 
-                },
-                unit_amount: result.value,
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+             // product: '<product id>',
+             product_data: {
+                name: `Invoice Payment #${id}`, 
+                description: 'Payment for your invoice', 
             },
-            quantity: 1,
+            unit_amount: result.value,
           },
-        ],
-        mode: 'payment',
-        success_url: `${origin}/invoices/${id}/payment?success=true`,
-        cancel_url: `${origin}/invoices/${id}/payment?canceled=true`,
-      });
-
-      console.log(session)
-
-      if (!session.url) {
-        throw new Error('Invalid Session , Stripe')
-      }
-      redirect(session.url)
-}
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${origin}/invoices/${id}/payment?status=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/invoices/${id}/payment?status=canceled&session_id={CHECKOUT_SESSION_ID}`,
+    });
+  
+    if (!session.url) {
+      throw new Error("Invalid Session");
+    }
+  
+    redirect(session.url);
+  }
