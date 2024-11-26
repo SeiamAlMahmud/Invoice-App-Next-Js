@@ -72,5 +72,12 @@ body {
   }
 }
 
+.email-text {
+  white-space: normal; /* Allow text to break into multiple lines */
+  overflow: visible; /* Make sure long text is visible */
+  word-break: break-word; /* Allow words to break if necessary */
+  font-size: 15px;
+}
+
 
 @layer base {img {display: initial;}}

@@ -16,7 +16,6 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 
-
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -31,6 +30,7 @@ import { useOptimistic } from "react";
 import { useRouter } from 'next/navigation';
 import SubmitButton from "@/components/SubmitButton";
 import Link from "next/link";
+import Image from "next/image";
 
 
 interface InvoiceProps {
@@ -59,7 +59,6 @@ export default function Invoice({ invoice }: InvoiceProps) {
 
         try {
             await updateStatusAction({ formData })
-
         } catch (error) {
             console.log(error)
             setCurrentStatus(orginalStatus)
@@ -68,10 +67,8 @@ export default function Invoice({ invoice }: InvoiceProps) {
 
     const handleDeleteInvoice = async (formData: FormData) => {
         try {
-           
             const result = await deleteInvoiceAction(formData);
             if (result.success) {
-               
                 router.push("/dashboard"); // Redirect to /dashboard after deletion 
             }
         } catch (error) {
@@ -79,17 +76,34 @@ export default function Invoice({ invoice }: InvoiceProps) {
         }
     }
 
-    const handleOnClick =async ()=> {
-        const html2pdf = await require('html2pdf.js')
-        const element = document.getElementById("invoice")!; // Assert that the element is not null
-        html2pdf(element, {
-            margin: 20
-        })
-        
-    }
+    const handleOnClick = async () => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const html2pdf = await require('html2pdf.js');
+        const element = document.getElementById("invoice")!; // Make sure the element exists
+
+        const options = {
+            margin: [5, 5], // Small margin
+            filename: 'receipt.pdf', // PDF file name
+            image: { type: 'jpeg', quality: 0.98 }, // High-quality image
+            html2canvas: { scale: 3, useCORS: true }, // Higher scale for better quality and CORS support
+            jsPDF: {
+                unit: 'mm', // Measurement unit
+                format: [80, 200], // Custom format (80mm width, 200mm height for long receipts)
+                orientation: 'portrait', // Standard POS orientation
+            },
+        };
+
+        // Generate the PDF
+        html2pdf().set(options).from(element).save();
+    };
+
     return (
         <main className="w-full h-screen gap-6 mt-10 px-5">
-            <Container  id="invoice">
+            <Container id="invoice">
+            <Image
+            className="flex mx-auto my-5 rounded-md"
+            src="/12.jpg" width={100} height={100} alt="Invoice Image" />
+
                 <div className="flex justify-between mb-8">
                     <h1 className="text-3xl font-bold flex items-center gap-4">
                         Invoices #{invoice.id}
@@ -103,8 +117,8 @@ export default function Invoice({ invoice }: InvoiceProps) {
                         )}>{currentStatus}</Badge>
                     </h1>
                     <div
-                    data-html2canvas-ignore
-                    className="flex gap-3 justify-between">
+                        data-html2canvas-ignore
+                        className="flex gap-3 justify-between">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
@@ -165,7 +179,8 @@ export default function Invoice({ invoice }: InvoiceProps) {
                                         <DropdownMenuItem className="cursor-pointer w-full">
 
                                             <button 
-                                            onClick={handleOnClick} className="w-full text-left flex gap-2 cursor-pointer">
+                                                onClick={handleOnClick} 
+                                                className="w-full text-left flex gap-2 cursor-pointer">
                                                 <FileDown className="w-4 h-auto" />
                                                 Download Invoice
                                             </button>
@@ -189,7 +204,7 @@ export default function Invoice({ invoice }: InvoiceProps) {
                                             <input type="hidden" name="id" value={invoice.id} />
                                             <SubmitButton
                                                 text="Delete Invoice"
-                                                text2="Deleteing Invoice..."
+                                                text2="Deleting Invoice..."
                                                 variant="destructive"
                                             />
                                         </form>
@@ -197,41 +212,37 @@ export default function Invoice({ invoice }: InvoiceProps) {
                                 </DialogHeader>
                             </DialogContent>
                         </Dialog>
-
-
-
-
                     </div>
                 </div>
                 <div>
-                <p className="text-3xl mb-3">
-                    ${(invoice.value / 100).toFixed(2)}
-                </p>
-                <p className="text-lg mb-8">
-                    {invoice.description}
-                </p>
-                <h2 className="text-lg mb-4 font-bold">
-                    Billing Details
-                </h2>
+                    <p className="text-3xl mb-3">
+                        ${(invoice.value / 100).toFixed(2)}
+                    </p>
+                    <p className="text-lg mb-8">
+                        {invoice.description}
+                    </p>
+                    <h2 className="text-lg mb-4 font-bold">
+                        Billing Details
+                    </h2>
 
-                <ul className="grid gap-2">
-                    <li className="flex gap-4">
-                        <strong className="block w-28 flex-shrink-0 font-medium text-sm">Invoice ID</strong>
-                        <span>{invoice.id}</span>
-                    </li>
-                    <li className="flex gap-4">
-                        <strong className="block w-28 flex-shrink-0 font-medium text-sm">Invoice Date</strong>
-                        <span>{new Date(invoice.createTs).toLocaleDateString()}</span>
-                    </li>
-                    <li className="flex gap-4">
-                        <strong className="block w-28 flex-shrink-0 font-medium text-sm">Billing Name</strong>
-                        <span>{invoice.customer.name}</span>
-                    </li>
-                    <li className="flex gap-4">
-                        <strong className="block w-28 flex-shrink-0 font-medium text-sm">Invoice Email</strong>
-                        <span>{invoice.customer.email}</span>
-                    </li>
-                </ul>
+                    <ul className="grid gap-2">
+                        <li className="flex gap-4">
+                            <strong className="block w-28 flex-shrink-0 font-medium text-sm">Invoice ID</strong>
+                            <span>{invoice.id}</span>
+                        </li>
+                        <li className="flex gap-4">
+                            <strong className="block w-28 flex-shrink-0 font-medium text-sm">Invoice Date</strong>
+                            <span>{new Date(invoice.createTs).toLocaleDateString()}</span>
+                        </li>
+                        <li className="flex gap-4">
+                            <strong className="block w-28 flex-shrink-0 font-medium text-sm">Billing Name</strong>
+                            <span>{invoice.customer.name}</span>
+                        </li>
+                        <li className="flex gap-4">
+                            <strong className="block w-28 flex-shrink-0 font-medium text-sm">Invoice Email</strong>
+                            <span className="email-text">{invoice.customer.email}</span> {/* Ensure full email is visible */}
+                        </li>
+                    </ul>
                 </div>
             </Container>
         </main>
