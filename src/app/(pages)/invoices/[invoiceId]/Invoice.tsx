@@ -3,9 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Customers, Invoices, Status, statuses } from "@/db/schema";
 import { cn } from "@/lib/utils";
 import Container from "@/components/Container";
-import { ChevronDown, CreditCard, Trash2 } from 'lucide-react';
+import { ChevronDown, CreditCard, FileDown, Trash2 } from 'lucide-react';
 import { Ellipsis } from 'lucide-react';
-
+// import html2pdf from 'html2pdf.js'
 import {
     Dialog,
     DialogContent,
@@ -14,8 +14,8 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-  } from "@/components/ui/dialog"
-  
+} from "@/components/ui/dialog"
+
 
 import {
     DropdownMenu,
@@ -27,8 +27,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { AVAILABLE_STATUSES } from "@/app/data/invoices";
 import { updateStatusAction, deleteInvoiceAction } from "@/app/actions";
-import { useOptimistic, useState } from "react";
-import { useRouter } from 'next/navigation'; 
+import { useOptimistic } from "react";
+import { useRouter } from 'next/navigation';
 import SubmitButton from "@/components/SubmitButton";
 import Link from "next/link";
 
@@ -40,9 +40,8 @@ interface InvoiceProps {
 }
 
 export default function Invoice({ invoice }: InvoiceProps) {
-    
-  const router = useRouter();
-  const [loading, setLoading] = useState(false)
+
+    const router = useRouter();
 
     const [currentStatus, setCurrentStatus] = useOptimistic(
         invoice.status,
@@ -59,7 +58,7 @@ export default function Invoice({ invoice }: InvoiceProps) {
         setCurrentStatus(formData.get('status'))
 
         try {
-            await updateStatusAction({formData})
+            await updateStatusAction({ formData })
 
         } catch (error) {
             console.log(error)
@@ -67,24 +66,30 @@ export default function Invoice({ invoice }: InvoiceProps) {
         }
     }
 
-    const handleDeleteInvoice = async (formData: FormData)=> {
+    const handleDeleteInvoice = async (formData: FormData) => {
         try {
-            setLoading(true)
+           
             const result = await deleteInvoiceAction(formData);
             if (result.success) {
-                setLoading(false)
+               
                 router.push("/dashboard"); // Redirect to /dashboard after deletion 
-        }
+            }
         } catch (error) {
             console.log(error)
-        }finally{
-            setLoading(false)
         }
     }
-console.log(loading,"dsfhsdugfuysdgfyu")
+
+    const handleOnClick =async ()=> {
+        const html2pdf = await require('html2pdf.js')
+        const element = document.getElementById("invoice")!; // Assert that the element is not null
+        html2pdf(element, {
+            margin: 20
+        })
+        
+    }
     return (
         <main className="w-full h-screen gap-6 mt-10 px-5">
-            <Container>
+            <Container  id="invoice">
                 <div className="flex justify-between mb-8">
                     <h1 className="text-3xl font-bold flex items-center gap-4">
                         Invoices #{invoice.id}
@@ -97,7 +102,9 @@ console.log(loading,"dsfhsdugfuysdgfyu")
                             "cursor-pointer capitalize"
                         )}>{currentStatus}</Badge>
                     </h1>
-                    <div className="flex gap-3 justify-between">
+                    <div
+                    data-html2canvas-ignore
+                    className="flex gap-3 justify-between">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
@@ -128,64 +135,75 @@ console.log(loading,"dsfhsdugfuysdgfyu")
                         </DropdownMenu>
 
                         <Dialog>
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <Button variant="outline" className="flex items-center gap-2">
-        <span className="sr-only">More Options</span>
-        <Ellipsis className="w-4 h-auto" />
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent>
-      <div className="Container">
-        <DropdownMenuItem className="cursor-pointer w-full">
-          <DialogTrigger asChild>
-            <span role="button" className="w-full text-left flex gap-2 cursor-pointer">
-              <Trash2 className="w-4 h-auto" />
-              Delete Invoice
-            </span>
-          </DialogTrigger>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer w-full">
-          
-            <Link href={`/invoices/${invoice.id}/payment`} className="w-full text-left flex gap-2 cursor-pointer">
-              <CreditCard className="w-4 h-auto" />
-              Payment
-            </Link>
-          
-        </DropdownMenuItem>
-        <DropdownMenuSeparator className="last:hidden" />
-      </div>
-    </DropdownMenuContent>
-  </DropdownMenu>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="flex items-center gap-2">
+                                        <span className="sr-only">More Options</span>
+                                        <Ellipsis className="w-4 h-auto" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <div className="Container">
+                                        <DropdownMenuItem className="cursor-pointer w-full">
+                                            <DialogTrigger asChild>
+                                                <span role="button" className="w-full text-left flex gap-2 cursor-pointer">
+                                                    <Trash2 className="w-4 h-auto" />
+                                                    Delete Invoice
+                                                </span>
+                                            </DialogTrigger>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem className="cursor-pointer w-full">
 
-  <DialogContent className="bg-white">
-    <DialogHeader className="space-y-4">
-      <DialogTitle className="text-3xl text-center">Delete Invoice?</DialogTitle>
-      <DialogDescription>
-        This action cannot be undone. This will permanently delete your Invoice
-        and remove your data from our servers.
-      </DialogDescription>
+                                            <Link href={`/invoices/${invoice.id}/payment`} className="w-full text-left flex gap-2 cursor-pointer">
+                                                <CreditCard className="w-4 h-auto" />
+                                                Payment
+                                            </Link>
 
-      <DialogFooter>
-        <form action={handleDeleteInvoice} className="w-1/2 flex justify-center mx-auto">
-          <input type="hidden" name="id" value={invoice.id} />
-        <SubmitButton
-         text="Delete Invoice"
-         text2="Deleteing Invoice..."
-         variant="destructive"
-         />
-        </form>
-      </DialogFooter>
-    </DialogHeader>
-  </DialogContent>
-</Dialog>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem className="cursor-pointer w-full">
+
+                                            <button 
+                                            onClick={handleOnClick} className="w-full text-left flex gap-2 cursor-pointer">
+                                                <FileDown className="w-4 h-auto" />
+                                                Download Invoice
+                                            </button>
+
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator className="last:hidden" />
+                                    </div>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            <DialogContent className="bg-white">
+                                <DialogHeader className="space-y-4">
+                                    <DialogTitle className="text-3xl text-center">Delete Invoice?</DialogTitle>
+                                    <DialogDescription>
+                                        This action cannot be undone. This will permanently delete your Invoice
+                                        and remove your data from our servers.
+                                    </DialogDescription>
+
+                                    <DialogFooter>
+                                        <form action={handleDeleteInvoice} className="w-1/2 flex justify-center mx-auto">
+                                            <input type="hidden" name="id" value={invoice.id} />
+                                            <SubmitButton
+                                                text="Delete Invoice"
+                                                text2="Deleteing Invoice..."
+                                                variant="destructive"
+                                            />
+                                        </form>
+                                    </DialogFooter>
+                                </DialogHeader>
+                            </DialogContent>
+                        </Dialog>
 
 
- 
-                    
+
+
                     </div>
                 </div>
+                <div>
                 <p className="text-3xl mb-3">
                     ${(invoice.value / 100).toFixed(2)}
                 </p>
@@ -214,6 +232,7 @@ console.log(loading,"dsfhsdugfuysdgfyu")
                         <span>{invoice.customer.email}</span>
                     </li>
                 </ul>
+                </div>
             </Container>
         </main>
     );
